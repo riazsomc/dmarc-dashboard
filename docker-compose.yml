@@ -10,42 +10,30 @@ services:
       - POSTGRES_USER=dmarc_user
       - POSTGRES_PASSWORD=dmarc_password
       - POSTGRES_DB=dmarc_dashboard
-    networks:
-      app-network:
-        ipv4_address: 172.16.121.2
+    ports:
+      - "5432:5432"
 
   backend:
     container_name: backend
     image: riazsomc/dmarc-dashboard:backendv1
     volumes:
       - ./.env:/app/.env:ro
+    ports:
+      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://dmarc_user:dmarc_password@db:5432/dmarc_dashboard
     env_file:
       - ./.env
     depends_on:
       - db
-    networks:
-      app-network:
-        ipv4_address: 172.16.121.3
 
   frontend:
     container_name: frontend
     image: riazsomc/dmarc-dashboard:frontendv1
     ports:
-      - "80:80"  # Expose only the frontend to the external network
+      - "80:80"
     depends_on:
       - backend
-    networks:
-      app-network:
-        ipv4_address: 172.16.121.4
 
 volumes:
   postgres_data:
-
-networks:
-  app-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.16.121.0/24
