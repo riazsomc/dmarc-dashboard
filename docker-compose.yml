@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=dmarc_user
+      - POSTGRES_PASSWORD=dmarc_password
+      - POSTGRES_DB=dmarc_dashboard
+    ports:
+      - "5432:5432"
+
+  backend:
+    container_name: backend
+    image: riazsomc/dmarc-dashboard:backendv1
+    volumes:
+      - ./.env:/app/.env:ro
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://dmarc_user:dmarc_password@db:5432/dmarc_dashboard
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  frontend:
+    container_name: frontend
+    image: riazsomc/dmarc-dashboard:frontendv1
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
